@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Dashboard - Infrascan</title>
+    <!-- ArcGIS API for JavaScript -->
+<link rel="stylesheet" href="https://js.arcgis.com/4.27/esri/themes/light/main.css">
+<script src="https://js.arcgis.com/4.27/"></script>
+
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .dashboard-content-section {
+            display: none;
+        }
+        .dashboard-content-section.active {
+            display: block;
+        }
+        .feed-post {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .post-author {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .author-avatar {
+            width: 40px;
+            height: 40px;
+            background: #1a5490;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        .post-meta {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+        .post-content {
+            margin: 1rem 0;
+            line-height: 1.6;
+        }
+        .post-footer {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .post-actions {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+        .post-action {
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .post-action:hover {
+            color: #1a5490;
+        }
+        .create-post {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .create-post textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: inherit;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 100px;
+        }
+        .map-viewer {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #ddd;
+        }
+        .donation-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+        .donation-progress {
+            margin: 1rem 0;
+        }
+        .progress-bar {
+            background: #e0e0e0;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, #27ae60, #2ecc71);
+            height: 100%;
+            transition: width 0.3s;
+        }
+        .upload-area {
+            border: 2px dashed #ddd;
+            padding: 3rem;
+            text-align: center;
+            border-radius: 8px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upload-area:hover {
+            border-color: #1a5490;
+            background: #e8f4f8;
+        }
+        .uploaded-files {
+            margin-top: 1.5rem;
+        }
+        .file-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ngo-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+        .ngo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>INFRASCAN</h2>
+                <p>Community Portal</p>
+            </div>
+            <ul class="sidebar-nav">
+                <li><a href="#" onclick="showSection('overview')" class="active">Dashboard</a></li>
+                <li><a href="#" onclick="showSection('community-feed')">Community Feed</a></li>
+                <li><a href="#" onclick="showSection('damage-map')">Damage Visualization</a></li>
+                <li><a href="#" onclick="showSection('donations')">Donation Portal</a></li>
+
+                <li><a href="#" onclick="showSection('ngo-coordination')">NGO Coordination</a></li>
+
+
+                <li><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="dashboard-header">
+                <h1>Community Dashboard</h1>
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">CM</div>
+                    <span id="userName">Community Member</span>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </div>
+
+            <!-- Overview Section -->
+            <div id="overview" class="dashboard-content-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Active Alerts</h3>
+                        <div class="stat-value">2</div>
+                        <div class="stat-change negative">In your area</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Your Contributions</h3>
+                        <div class="stat-value">5</div>
+                        <div class="stat-change">Posts & uploads</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Nearby Relief Centers</h3>
+                        <div class="stat-value">3</div>
+                        <div class="stat-change positive">Within 5 km</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Community Impact</h3>
+                        <div class="stat-value">₹12.5K</div>
+                        <div class="stat-change">Total donated</div>
+                    </div>
+                </div>
+
+                <div class="dashboard-section">
+                    <h2>Recent Updates</h2>
+                    <div class="feed-post">
+                        <div class="post-header">
+                            <div class="post-author">
+                                <div class="author-avatar">AS</div>
+                                <div>
+                                    <strong>Admin - Disaster Management</strong>
+                                    <div class="post-meta">Bihar Region • 2 hours ago</div>
+                                </div>
+                            </div>
+                            <span class="badge minimal">Official</span>
+                        </div>
+                        <div class="post-content">
+                            New relief center operational at Muzaffarpur District Hospital. Essential supplies and medical aid available. Contact helpline: 1800-XXX-XXXX
+                        </div>
+                    </div>
+
+                    <div class="feed-post">
+                        <div class="post-header">
+                            <div class="post-author">
+                                <div class="author-avatar">NG</div>
+                                <div>
+                                    <strong>Red Cross Society</strong>
+                                    <div class="post-meta">Patna • 5 hours ago</div>
+                                </div>
+                            </div>
+                            <span class="badge moderate">NGO Update</span>
+                        </div>
+                        <div class="post-content">
+                            Volunteers needed for food distribution in affected villages. Registration open at main camp. Safety equipment provided.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-section">
+                    <h2>Quick Actions</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <button class="btn-primary" onclick="showSection('donations')">Make a Donation</button>
+                        <button class="btn-primary" onclick="showSection('community-feed')">Post Update</button>
+                        <button class="btn-primary" onclick="showSection('media-upload')">Upload Photos/Videos</button>
+                        <button class="btn-primary" onclick="showSection('relief-centers')">Find Relief Center</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Community Feed Section -->
+            <div id="community-feed" class="dashboard-content-section">
+                <div class="dashboard-section">
+                    <h2>Community Feed</h2>
+                    <p>AI-moderated platform for flood-related updates and communication</p>
+
+                    <div class="create-post">
+                        <h3>Share an Update</h3>
+                        <form onsubmit="postToFeed(event)">
+                            <textarea id="postContent" placeholder="Share flood-related information, needs, or updates..." required></textarea>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;">
+                                <input type="text" id="postLocation" placeholder="Location" required style="padding: 0.8rem; border: 1px solid #ddd; border-radius: 5px;">
+                                <select style="padding: 0.8rem; border: 1px solid #ddd; border-radius: 5px;">
+                                    <option value="general">General Update</option>
+                                    <option value="help">Need Help</option>
+                                    <option value="resource">Resource Available</option>
+                                    <option value="warning">Warning/Alert</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn-primary">Post (AI Review)</button>
+                            <p style="font-size: 0.85rem; color: #7f8c8d; margin-top: 0.5rem;">
+                                Posts are reviewed by AI to ensure flood-related content and location accuracy
+                            </p>
+                        </form>
+                    </div>
+
+                    <div id="communityFeedPosts">
+                        <div class="feed-post">
+                            <div class="post-header">
+                                <div class="post-author">
+                                    <div class="author-avatar">RK</div>
+                                    <div>
+                                        <strong>Rajesh Kumar</strong>
+                                        <div class="post-meta">Darbhanga, Bihar • 1 hour ago</div>
+                                    </div>
+                                </div>
+                                <span class="badge minimal">Verified</span>
+                            </div>
+                            <div class="post-content">
+                                Water levels receding in our area. Main road to village accessible now. Relief supplies reached safely.
+                            </div>
+                            <div class="post-footer">
+                                <div class="post-actions">
+                                    <span class="post-action">👍 24 Helpful</span>
+                                    <span class="post-action">💬 5 Comments</span>
+                                    <span class="post-action">🔗 Share</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="feed-post">
+                            <div class="post-header">
+                                <div class="post-author">
+                                    <div class="author-avatar">PM</div>
+                                    <div>
+                                        <strong>Priya Mishra</strong>
+                                        <div class="post-meta">Muzaffarpur • 3 hours ago</div>
+                                    </div>
+                                </div>
+                                <span class="badge moderate">Need Help</span>
+                            </div>
+                            <div class="post-content">
+                                Need medicines for elderly residents at temporary shelter. Contact: 9XXXXXXXXX
+                            </div>
+                            <div class="post-footer">
+                                <div class="post-actions">
+                                    <span class="post-action">👍 18 Helpful</span>
+                                    <span class="post-action">💬 12 Comments</span>
+                                    <span class="post-action">🔗 Share</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="feed-post">
+                            <div class="post-header">
+                                <div class="post-author">
+                                    <div class="author-avatar">AS</div>
+                                    <div>
+                                        <strong>Arun Singh</strong>
+                                        <div class="post-meta">Patna • 6 hours ago</div>
+                                    </div>
+                                </div>
+                                <span class="badge minimal">Verified</span>
+                            </div>
+                            <div class="post-content">
+                                Our NGO has extra blankets and dry food packets. Available for distribution at Gandhi Maidan camp.
+                            </div>
+                            <div class="post-footer">
+                                <div class="post-actions">
+                                    <span class="post-action">👍 45 Helpful</span>
+                                    <span class="post-action">💬 8 Comments</span>
+                                    <span class="post-action">🔗 Share</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Damage Visualization Section -->
+<div id="damage-map" class="dashboard-content-section">
+    <div class="dashboard-section">
+        <h2>Damage Visualization</h2>
+        <p>Interactive maps showing damaged areas and evacuation zones</p>
+
+        <iframe src="https://www.arcgis.com/apps/instant/atlas/index.html?appid=0d1e6cb5525a4d9abddd828b1180b3fa" width="400" height="600" frameborder="0" style="border:0" allowfullscreen>iFrames are not supported on this page.</iframe>
+    </div>
+</div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>Map Legend</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="width: 20px; height: 20px; background: #e74c3c; border-radius: 3px;"></span>
+                                <span>Severe Damage</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="width: 20px; height: 20px; background: #f39c12; border-radius: 3px;"></span>
+                                <span>Moderate Damage</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="width: 20px; height: 20px; background: #27ae60; border-radius: 3px;"></span>
+                                <span>Safe Zone</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="width: 20px; height: 20px; background: #3498db; border-radius: 3px;"></span>
+                                <span>Relief Center</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>Locate Family Members</h3>
+                        <p>Search for affected relatives and their last known location</p>
+                        <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 1rem; margin: 1rem 0;">
+                            <input type="text" placeholder="Enter name or phone number" style="padding: 0.8rem; border: 1px solid #ddd; border-radius: 5px;">
+                            <button class="btn-primary">Search</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Donations Section -->
+            <div id="donations" class="dashboard-content-section">
+                <div class="dashboard-section">
+                    <h2>Donation & Investment Portal</h2>
+                    <p>Government-verified funding requirements with real-time impact tracking</p>
+
+                    <div class="donation-card">
+                        <h3>Emergency Relief Fund</h3>
+                        <p>Immediate assistance for displaced families and emergency supplies</p>
+                        <div class="donation-progress">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>₹2.8M raised</span>
+                                <span>Goal: ₹5M</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 56%;"></div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                            <button class="btn-primary">Donate ₹500</button>
+                            <button class="btn-primary">Donate ₹1,000</button>
+                            <button class="btn-primary">Custom Amount</button>
+                        </div>
+                    </div>
+
+                    <div class="donation-card">
+                        <h3>School Reconstruction Fund</h3>
+                        <p>Rebuild damaged schools with flood-resistant infrastructure</p>
+                        <div class="donation-progress">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>₹1.2M raised</span>
+                                <span>Goal: ₹3M</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 40%;"></div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                            <button class="btn-primary">Donate ₹500</button>
+                            <button class="btn-primary">Donate ₹1,000</button>
+                            <button class="btn-primary">Custom Amount</button>
+                        </div>
+                    </div>
+
+                    <div class="donation-card">
+                        <h3>Housing Restoration</h3>
+                        <p>Help families rebuild their homes with improved flood protection</p>
+                        <div class="donation-progress">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>₹850K raised</span>
+                                <span>Goal: ₹2.5M</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 34%;"></div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                            <button class="btn-primary">Donate ₹500</button>
+                            <button class="btn-primary">Donate ₹1,000</button>
+                            <button class="btn-primary">Custom Amount</button>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>Your Donation History</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Fund</th>
+                                    <th>Amount</th>
+                                    <th>Impact</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Feb 9, 2026</td>
+                                    <td>Emergency Relief</td>
+                                    <td>₹1,000</td>
+                                    <td>Helped 2 families</td>
+                                </tr>
+                                <tr>
+                                    <td>Feb 5, 2026</td>
+                                    <td>Medical Supplies</td>
+                                    <td>₹500</td>
+                                    <td>Medicines for 5 people</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Media Upload Section -->
+            <div id="media-upload" class="dashboard-content-section">
+                <div class="dashboard-section">
+                    <h2>Real-Time Media Upload</h2>
+                    <p>Upload photos and videos to help ground-truth LiDAR data</p>
+
+                    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                        <h3>📤 Click to Upload</h3>
+                        <p>Photos, Videos (Max 50MB per file)</p>
+                        <p style="font-size: 0.85rem; color: #7f8c8d; margin-top: 1rem;">
+                            AI will verify authenticity and add geo-tags automatically
+                        </p>
+                        <input type="file" id="fileInput" multiple accept="image/*,video/*" style="display: none;" onchange="handleFileUpload(event)">
+                    </div>
+
+                    <div class="uploaded-files">
+                        <h3>Your Uploaded Media</h3>
+                        <div class="file-item">
+                            <div>
+                                <strong>flood_damage_street.jpg</strong>
+                                <div style="font-size: 0.85rem; color: #7f8c8d;">Darbhanga, Bihar • Feb 9, 2026</div>
+                            </div>
+                            <span class="badge minimal">Verified</span>
+                        </div>
+                        <div class="file-item">
+                            <div>
+                                <strong>road_washout_video.mp4</strong>
+                                <div style="font-size: 0.85rem; color: #7f8c8d;">Muzaffarpur • Feb 8, 2026</div>
+                            </div>
+                            <span class="badge minimal">Verified</span>
+                        </div>
+                        <div class="file-item">
+                            <div>
+                                <strong>relief_camp_photo.jpg</strong>
+                                <div style="font-size: 0.85rem; color: #7f8c8d;">Patna • Feb 7, 2026</div>
+                            </div>
+                            <span class="badge moderate">Processing</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem; padding: 1rem; background: #e8f4f8; border-radius: 5px;">
+                        <h4>Upload Guidelines</h4>
+                        <ul style="margin-left: 1.5rem; line-height: 1.8;">
+                            <li>Ensure GPS/location services are enabled</li>
+                            <li>Include clear, well-lit images of damage</li>
+                            <li>Add context in photo description if needed</li>
+                            <li>Do not upload sensitive personal information</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NGO Coordination Section -->
+            <div id="ngo-coordination" class="dashboard-content-section">
+                <div class="dashboard-section">
+                    <h2>NGO Coordination Tools</h2>
+                    <p>Volunteer deployment and resource coordination</p>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Active NGOs</h3>
+                            <div class="stat-value">23</div>
+                            <div class="stat-change">In your region</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Volunteers Needed</h3>
+                            <div class="stat-value">150+</div>
+                            <div class="stat-change">Various positions</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Resources Available</h3>
+                            <div class="stat-value">45</div>
+                            <div class="stat-change">Different items</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Your Volunteer Hours</h3>
+                            <div class="stat-value">12</div>
+                            <div class="stat-change positive">This month</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>NGO Activities</h3>
+                        <div class="ngo-card">
+                            <div class="ngo-header">
+                                <div>
+                                    <h4>Red Cross Society - Bihar Chapter</h4>
+                                    <p style="color: #7f8c8d; font-size: 0.9rem;">Medical aid and emergency response</p>
+                                </div>
+                                <button class="btn-primary">Join</button>
+                            </div>
+                            <p><strong>Volunteers needed:</strong> 20 for medical camp setup</p>
+                            <p><strong>Location:</strong> Muzaffarpur District Hospital</p>
+                            <p><strong>Duration:</strong> 3 days (Feb 10-12)</p>
+                        </div>
+
+                        <div class="ngo-card">
+                            <div class="ngo-header">
+                                <div>
+                                    <h4>Food Relief Foundation</h4>
+                                    <p style="color: #7f8c8d; font-size: 0.9rem;">Food distribution and nutrition support</p>
+                                </div>
+                                <button class="btn-primary">Join</button>
+                            </div>
+                            <p><strong>Volunteers needed:</strong> 15 for food packing and distribution</p>
+                            <p><strong>Location:</strong> Multiple villages in Darbhanga</p>
+                            <p><strong>Duration:</strong> Ongoing daily shifts</p>
+                        </div>
+
+                        <div class="ngo-card">
+                            <div class="ngo-header">
+                                <div>
+                                    <h4>Education Support Initiative</h4>
+                                    <p style="color: #7f8c8d; font-size: 0.9rem;">Educational support for affected children</p>
+                                </div>
+                                <button class="btn-primary">Join</button>
+                            </div>
+                            <p><strong>Volunteers needed:</strong> 10 teachers/tutors</p>
+                            <p><strong>Location:</strong> Temporary learning centers</p>
+                            <p><strong>Duration:</strong> 2 weeks minimum commitment</p>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>Resource Request Board</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Quantity Needed</th>
+                                    <th>Location</th>
+                                    <th>Priority</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Blankets</td>
+                                    <td>500 units</td>
+                                    <td>Patna Relief Camp</td>
+                                    <td><span class="badge severe">High</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Medicines (Basic)</td>
+                                    <td>200 kits</td>
+                                    <td>Multiple locations</td>
+                                    <td><span class="badge severe">High</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Dry Food Packets</td>
+                                    <td>1000 packets</td>
+                                    <td>Darbhanga District</td>
+                                    <td><span class="badge moderate">Medium</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Water Purification Tablets</td>
+                                    <td>300 bottles</td>
+                                    <td>Various camps</td>
+                                    <td><span class="badge moderate">Medium</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flood Risk Map Section -->
+            <div id="flood-map" class="dashboard-content-section">
+                <div class="dashboard-section">
+                    <h2>National & State Flood Risk Map</h2>
+                    <p>Month-wise flood predictions for your region</p>
+
+                    <div class="map-viewer">
+                        <div>
+                            <h3>Interactive Flood Risk Map</h3>
+                            <p>View current and predicted flood risks in your area</p>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>Upcoming Risk Predictions</h3>
+                        <div class="ngo-card">
+                            <h4>June 2026 - High Risk Period</h4>
+                            <p>Early monsoon flooding expected in Bihar, Assam, and West Bengal regions</p>
+                            <p><strong>Recommended actions:</strong> Prepare emergency supplies, identify evacuation routes</p>
+                        </div>
+                        <div class="ngo-card">
+                            <h4>July 2026 - Peak Monsoon</h4>
+                            <p>Highest rainfall expected. Monitor local weather alerts closely</p>
+                            <p><strong>Recommended actions:</strong> Stay informed, keep important documents safe</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Relief Centers Section -->
+            <div id="relief-centers" class="dashboard-content-section">
+                <div class="dashboard-section">
+                    <h2>Relief Centers & Evacuation Zones</h2>
+                    
+                    <div style="margin-bottom: 2rem;">
+                        <input type="text" placeholder="Search by location..." style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+                    </div>
+
+                    <div class="map-viewer">
+                        <div>
+                            <h3>Relief Centers Map</h3>
+                            <p>Locate nearest relief centers and safe zones</p>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>Nearby Relief Centers</h3>
+                        <div class="ngo-card">
+                            <h4>Muzaffarpur District Hospital Camp</h4>
+                            <p><strong>Distance:</strong> 2.3 km from your location</p>
+                            <p><strong>Capacity:</strong> 500 people (Currently: 340)</p>
+                            <p><strong>Facilities:</strong> Medical aid, Food, Shelter, Clean water</p>
+                            <p><strong>Contact:</strong> 0621-XXXXXXX</p>
+                            <button class="btn-primary">Get Directions</button>
+                        </div>
+
+                        <div class="ngo-card">
+                            <h4>Gandhi Maidan Relief Center</h4>
+                            <p><strong>Distance:</strong> 4.7 km from your location</p>
+                            <p><strong>Capacity:</strong> 800 people (Currently: 520)</p>
+                            <p><strong>Facilities:</strong> Food, Shelter, Clothing, Children's area</p>
+                            <p><strong>Contact:</strong> 0612-XXXXXXX</p>
+                            <button class="btn-primary">Get Directions</button>
+                        </div>
+
+                        <div class="ngo-card">
+                            <h4>Community Hall - Darbhanga</h4>
+                            <p><strong>Distance:</strong> 6.1 km from your location</p>
+                            <p><strong>Capacity:</strong> 300 people (Currently: 180)</p>
+                            <p><strong>Facilities:</strong> Shelter, Basic medical aid, Food distribution</p>
+                            <p><strong>Contact:</strong> 06272-XXXXXXX</p>
+                            <button class="btn-primary">Get Directions</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
