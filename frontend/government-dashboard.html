@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Government Dashboard - Infrascan</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .dashboard-content-section {
+            display: none;
+        }
+        .dashboard-content-section.active {
+            display: block;
+        }
+        .alert {
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .route-warnings {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        .lidar-view-active {
+            padding: 2rem;
+            background: #f8f9fa;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .zone-card {
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+        }
+        .zone-card.red {
+            background: #fee;
+            border-color: #e74c3c;
+        }
+        .zone-card.yellow {
+            background: #fef9e7;
+            border-color: #f39c12;
+        }
+        .zone-card.green {
+            background: #eafaf1;
+            border-color: #27ae60;
+        }
+        .cost-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .cost-box {
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .cost-amount {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a5490;
+            margin: 0.5rem 0;
+        }
+        .feed-post {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .post-author {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .author-avatar {
+            width: 40px;
+            height: 40px;
+            background: #1a5490;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        .post-meta {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+        .post-content {
+            margin: 1rem 0;
+            line-height: 1.6;
+        }
+        .post-footer {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .map-viewer {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>INFRASCAN</h2>
+                <p>Government Portal</p>
+            </div>
+            <ul class="sidebar-nav">
+                <li><a href="#" onclick="showSection('overview')" class="active">Dashboard Overview</a></li>
+                <li><a href="#" onclick="showSection('lidar')">LiDAR & Drone Data</a></li>
+                <li><a href="#" onclick="showSection('change-detection')">Change Detection</a></li>
+                <li><a href="#" onclick="showSection('emergency-routes')">Emergency Routes</a></li>
+                <li><a href="#" onclick="showSection('damage-zoning')">Damage Zoning</a></li>
+                <li><a href="#" onclick="showSection('population')">Population Analytics</a></li>
+                <li><a href="#" onclick="showSection('cost-planning')">Cost & Recovery Planning</a></li>
+                <li><a href="#" onclick="showSection('investor-dashboard')">Investor Collaboration</a></li>
+                <li><a href="#" onclick="showSection('flood-map')">National Flood Map</a></li>
+                <li><a href="#" onclick="showSection('restoration')">Floodplain Restoration</a></li>
+                <li><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="dashboard-header">
+                <h1>Government Dashboard</h1>
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">GO</div>
+                    <span id="userName">Government Official</span>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </div>
+
+            <!-- Overview Section -->
+            <div id="overview" class="dashboard-content-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Active Flood Events</h3>
+                        <div class="stat-value">3</div>
+                        <div class="stat-change positive">2 under control</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Affected Population</h3>
+                        <div class="stat-value">45,230</div>
+                        <div class="stat-change">Across 127 villages</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Damage Assessment</h3>
+                        <div class="stat-value">₹2.4B</div>
+                        <div class="stat-change negative">Infrastructure loss</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Recovery Progress</h3>
+                        <div class="stat-value">34%</div>
+                        <div class="stat-change positive">+12% this week</div>
+                    </div>
+                </div>
+
+                <div class="dashboard-section">
+                    <h2>Recent Damage Reports</h2>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Location</th>
+                                <th>Type</th>
+                                <th>Severity</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Bihar - Muzaffarpur District</td>
+                                <td>Infrastructure</td>
+                                <td><span class="badge severe">Severe</span></td>
+                                <td>Feb 8, 2026</td>
+                                <td>Under Assessment</td>
+                            </tr>
+                            <tr>
+                                <td>Assam - Brahmaputra Valley</td>
+                                <td>Agricultural</td>
+                                <td><span class="badge moderate">Moderate</span></td>
+                                <td>Feb 7, 2026</td>
+                                <td>Recovery Initiated</td>
+                            </tr>
+                            <tr>
+                                <td>Kerala - Kochi Region</td>
+                                <td>Residential</td>
+                                <td><span class="badge minimal">Minimal</span></td>
+                                <td>Feb 6, 2026</td>
+                                <td>Monitoring</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- LiDAR & Drone Data Section -->
+            <div id="lidar" class="dashboard-content-section">
+                <div class="dashboard-section">
+                    <h2>LiDAR & Drone Data Integration</h2>
+                    <p>3D floodplain reconstruction using pre and post-flood LiDAR data</p>
+                    
+                    <div class="stats-grid" style="margin-top: 2rem;">
+                        <div class="stat-card">
+                            <h3>LiDAR Scans Completed</h3>
+                            <div class="stat-value">12</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Area Covered</h3>
+                            <div class="stat-value">450 km²</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Drone Missions</h3>
+                            <div class="stat-value">28</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Data Accuracy</h3>
+                            <div class="stat-value">98.7%</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>LiDAR Viewer</h3>
+                        <div style="display: flex; gap: 1rem; margin: 1rem 0;">
+                            <button class="btn-primary" onclick="toggleLidarView('Pre-Flood')">Pre-Flood Data</button>
+                            <button class="btn-primary" onclick="toggleLidarView('Post-Flood')">Post-Flood Data</button>
+                            <button class="btn-primary" onclick="toggleLidarView('Change Detection')">Change Detection</button>
+                        </div>
+                        <div id="lidarViewer" class="map-viewer">
+                            <p>Select a view mode to display LiDAR data</p>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>Detected Changes</h3>
+                        <ul>
+                            <li>Elevation change: -2.3m average in flood zones</li>
+                            <li>Sediment displacement: 15,000 cubic meters</li>
+                            <li>River widening: 45m in critical sections</li>
+                            <li>Infrastructure deformation: 23 structures flagged</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Change Detection Section -->
+            <div id="change-detection" class="dashboard-content-section">
+                <div class="dashboard-section">
+                    <h2>AI-Based Pre vs Post Flood Change Detection</h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Structural Collapses</h3>
+                            <div class="stat-value">47</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Road Washouts</h3>
+                            <div class="stat-value">23 km</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Bridge Damage</h3>
+                            <div class="stat-value">8</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Agricultural Loss</h3>
+                            <div class="stat-value">3,400 ha</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>Change Heatmap</h3>
+                        <div class="map-viewer">
+                            <p>AI-generated change detection heatmap visualization</p>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>Infrastructure Usability Index</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Infrastructure Type</th>
+                                    <th>Total Units</th>
+                                    <th>Damaged</th>
+                                    <th>Usability Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Roads</td>
+                                    <td>450 km</td>
+                                    <td>23 km</td>
+                                    <td><span class="badge moderate">74%</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Bridges</td>
+                                    <td>34</td>
+                                    <td>8</td>
+                                    <td><span class="badge moderate">76%</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Buildings</td>
+                                    <td>2,340</td>
+                                    <td>47</td>
+                                    <td><span class="badge minimal">98%</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Routes Section -->
+            <div id="emergency-routes" class="dashboard-content-section">
+                <div class="dashboard-section">
+                    <h2>AI-Powered Emergency Route Finder</h2>
+                    <p>Generate optimal routes for rescue operations and heavy machinery deployment</p>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>Route Planning</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;">
+                            <div class="form-group">
+                                <label>From Location</label>
+                                <input type="text" id="routeFrom" placeholder="Enter starting point">
+                            </div>
+                            <div class="form-group">
+                                <label>To Location</label>
+                                <input type="text" id="routeTo" placeholder="Enter destination">
+                            </div>
+                            <div class="form-group">
+                                <label>Vehicle Type</label>
+                                <select id="vehicleType">
+                                    <option value="rescue">Rescue Vehicle</option>
+                                    <option value="heavy">Heavy Machinery</option>
+                                    <option value="supply">Supply Truck</option>
+                                    <option value="ambulance">Ambulance</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn-primary" onclick="generateEmergencyRoute()" style="margin-top: 1.5rem; width: 100%;">Generate Route</button>
+                            </div>
+                        </div>
+                        <div id="routeResult"></div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>Unsafe Zones</h3>
+                        <div class="zone-card red">
+                            <h4>Zone A - Complete Road Blockage</h4>
+                            <p>Highway NH-27, Km 45-52 - Bridge collapse, detour required</p>
+                        </div>
+                        <div class="zone-card yellow">
+                            <h4>Zone B - Partial Access</h4>
+                            <p>District Road 12 - Water depth 0.5m, heavy vehicles only</p>
+                        </div>
+                        <div class="zone-card green">
+                            <h4>Zone C - Clear Route</h4>
+                            <p>State Highway 8 - All clear, recommended for emergency operations</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Damage Zoning Section -->
+            <div id="damage-zoning" class="dashboard-content-section">
+                <div class="dashboard-section">
+                    <h2>Damage Zoning & Priority Classification</h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Red Zones (Severe)</h3>
+                            <div class="stat-value">15</div>
+                            <div class="stat-change negative">Immediate intervention</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Yellow Zones (Moderate)</h3>
+                            <div class="stat-value">32</div>
+                            <div class="stat-change">Scheduled recovery</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Green Zones (Minimal)</h3>
+                            <div class="stat-value">80</div>
+                            <div class="stat-change positive">Monitoring only</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Priority Score</h3>
+                            <div class="stat-value">8.2/10</div>
+                            <div class="stat-change">System efficiency</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>Priority Repair Timeline</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Priority</th>
+                                    <th>Location</th>
+                                    <th>Type</th>
+                                    <th>Zone</th>
+                                    <th>Timeline</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td>Patna District Hospital</td>
+                                    <td>Healthcare Facility</td>
+                                    <td><span class="badge severe">Red</span></td>
+                                    <td>0-3 days</td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>NH-31 Bridge Reconstruction</td>
+                                    <td>Transport Infrastructure</td>
+                                    <td><span class="badge severe">Red</span></td>
+                                    <td>1-2 weeks</td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>Village School Complex</td>
+                                    <td>Educational</td>
+                                    <td><span class="badge moderate">Yellow</span></td>
+                                    <td>2-4 weeks</td>
+                                </tr>
+                                <tr>
+                                    <td>4</td>
+                                    <td>Agricultural Land Restoration</td>
+                                    <td>Agriculture</td>
+                                    <td><span class="badge moderate">Yellow</span></td>
+                                    <td>1-3 months</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Population Analytics Section -->
+            <div id="population" class="dashboard-content-section">
+                <div class="dashboard-section">
+                    <h2>Population & Impact Analytics</h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Families Affected</h3>
+                            <div class="stat-value">9,046</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Villages Impacted</h3>
+                            <div class="stat-value">127</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Displaced Population</h3>
+                            <div class="stat-value">45,230</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Relief Camps Active</h3>
+                            <div class="stat-value">34</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>Critical Infrastructure Impact</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Infrastructure</th>
+                                    <th>Total</th>
+                                    <th>Damaged</th>
+                                    <th>People Affected</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Schools</td>
+                                    <td>78</td>
+                                    <td>12</td>
+                                    <td>8,500 students</td>
+                                </tr>
+                                <tr>
+                                    <td>Hospitals/Clinics</td>
+                                    <td>15</td>
+                                    <td>3</td>
+                                    <td>23,000 catchment</td>
+                                </tr>
+                                <tr>
+                                    <td>Water Supply</td>
+                                    <td>45 stations</td>
+                                    <td>18</td>
+                                    <td>35,000 people</td>
+                                </tr>
+                                <tr>
+                                    <td>Power Infrastructure</td>
+                                    <td>23 substations</td>
+                                    <td>7</td>
+                                    <td>40,000 households</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>Vulnerable Groups</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <h3>Elderly (60+)</h3>
+                                <div class="stat-value">6,785</div>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Children (0-12)</h3>
+                                <div class="stat-value">12,340</div>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Pregnant Women</h3>
+                                <div class="stat-value">423</div>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Disabled Persons</h3>
+                                <div class="stat-value">1,156</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cost & Recovery Planning Section -->
+            <div id="cost-planning" class="dashboard-content-section">
+                <div class="dashboard-section">
+                    <h2>AI-Driven Cost & Recovery Planning</h2>
+                    
+                    <div class="cost-comparison">
+                        <div class="cost-box">
+                            <h3>Traditional Rebuilding</h3>
+                            <div class="cost-amount">₹3.2B</div>
+                            <p>Standard reconstruction without flood adaptation</p>
+                        </div>
+                        <div class="cost-box">
+                            <h3>Flood-Adaptive Rebuilding</h3>
+                            <div class="cost-amount">₹4.1B</div>
+                            <p>Includes natural buffers and floodplain restoration</p>
+                            <p style="color: #27ae60; font-weight: 600; margin-top: 1rem;">
+                                Long-term savings: ₹2.8B over 10 years
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>Budget Breakdown</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Estimated Cost</th>
+                                    <th>Allocated</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Roads & Bridges</td>
+                                    <td>₹1.2B</td>
+                                    <td>₹850M</td>
+                                    <td><span class="badge moderate">71%</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Housing</td>
+                                    <td>₹1.5B</td>
+                                    <td>₹1.1B</td>
+                                    <td><span class="badge moderate">73%</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Utilities</td>
+                                    <td>₹800M</td>
+                                    <td>₹650M</td>
+                                    <td><span class="badge minimal">81%</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Floodplain Restoration</td>
+                                    <td>₹600M</td>
+                                    <td>₹200M</td>
+                                    <td><span class="badge severe">33%</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>Phased Funding Requirements</h3>
+                        <div class="zone-card green">
+                            <h4>Phase 1 (0-3 months) - Emergency Response</h4>
+                            <p>Required: ₹1.2B | Status: Fully Funded</p>
+                        </div>
+                        <div class="zone-card yellow">
+                            <h4>Phase 2 (3-12 months) - Infrastructure Restoration</h4>
+                            <p>Required: ₹1.8B | Status: 65% Funded</p>
+                        </div>
+                        <div class="zone-card red">
+                            <h4>Phase 3 (1-3 years) - Long-term Adaptation</h4>
+                            <p>Required: ₹1.1B | Status: 28% Funded</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Investor Collaboration Section -->
+            <div id="investor-dashboard" class="dashboard-content-section">
+                <div class="dashboard-section">
+                    <h2>Government-Investor Collaboration Dashboard</h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Total Investment</h3>
+                            <div class="stat-value">₹2.8B</div>
+                            <div class="stat-change positive">+₹400M this month</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Active Investors</h3>
+                            <div class="stat-value">23</div>
+                            <div class="stat-change">8 corporations, 15 NGOs</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Funds Allocated</h3>
+                            <div class="stat-value">₹2.1B</div>
+                            <div class="stat-change">75% of total</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Work Completed</h3>
+                            <div class="stat-value">34%</div>
+                            <div class="stat-change positive">On schedule</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>Investment Tracking</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Investor</th>
+                                    <th>Amount</th>
+                                    <th>Allocation</th>
+                                    <th>Progress</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>National Disaster Relief Fund</td>
+                                    <td>₹1.2B</td>
+                                    <td>Infrastructure</td>
+                                    <td>45%</td>
+                                    <td><span class="badge minimal">Active</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Global Aid Foundation</td>
+                                    <td>₹500M</td>
+                                    <td>Housing</td>
+                                    <td>62%</td>
+                                    <td><span class="badge minimal">Active</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Tech Corp CSR Initiative</td>
+                                    <td>₹300M</td>
+                                    <td>Schools & Hospitals</td>
+                                    <td>28%</td>
+                                    <td><span class="badge moderate">In Progress</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Community Relief Network</td>
+                                    <td>₹150M</td>
+                                    <td>Emergency Relief</td>
+                                    <td>89%</td>
+                                    <td><span class="badge minimal">Near Complete</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>Transparency Logs</h3>
+                        <div class="feed-post">
+                            <div class="post-header">
+                                <div>
+                                    <strong>Milestone Released: Bridge Construction Phase 1</strong>
+                                    <div class="post-meta">Feb 9, 2026 - 10:30 AM</div>
+                                </div>
+                                <span class="badge minimal">Verified</span>
+                            </div>
+                            <div class="post-content">
+                                Funds released: ₹85M to contractor. Work completion verified through LiDAR scan and on-ground inspection.
+                            </div>
+                        </div>
+                        <div class="feed-post">
+                            <div class="post-header">
+                                <div>
+                                    <strong>New Investment: Education Infrastructure</strong>
+                                    <div class="post-meta">Feb 8, 2026 - 3:15 PM</div>
+                                </div>
+                                <span class="badge minimal">Confirmed</span>
+                            </div>
+                            <div class="post-content">
+                                Tech Corp committed ₹150M for rebuilding 12 schools with flood-resistant design.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flood Map Section -->
+            <div id="flood-map" class="dashboard-content-section">
+                <div class="dashboard-section">
+                    <h2>National & State Flood Risk Map</h2>
+                    <p>Color-coded flood risk with month-wise predictions</p>
+                    
+                    <div class="map-viewer" style="min-height: 500px;">
+                        <div>
+                            <h3>Interactive National Flood Risk Map</h3>
+                            <p>Map visualization showing risk levels across India</p>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>Monthly Flood Predictions</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>High Risk Regions</th>
+                                    <th>Risk Level</th>
+                                    <th>Predicted Impact</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>June 2026</td>
+                                    <td>Assam, Bihar, West Bengal</td>
+                                    <td><span class="badge severe">High</span></td>
+                                    <td>Early monsoon flooding expected</td>
+                                </tr>
+                                <tr>
+                                    <td>July 2026</td>
+                                    <td>Maharashtra, Kerala, Karnataka</td>
+                                    <td><span class="badge severe">High</span></td>
+                                    <td>Peak monsoon activity</td>
+                                </tr>
+                                <tr>
+                                    <td>August 2026</td>
+                                    <td>Uttar Pradesh, Madhya Pradesh</td>
+                                    <td><span class="badge moderate">Moderate</span></td>
+                                    <td>River discharge monitoring required</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Restoration Section -->
+            <div id="restoration" class="dashboard-content-section">
+                <div class="dashboard-section">
+                    <h2>Floodplain Restoration Visualizer</h2>
+                    <p>Simulate and visualize long-term flood mitigation through natural restoration</p>
+                    
+                    <div class="map-viewer">
+                        <div>
+                            <h3>3D Restoration Simulation</h3>
+                            <p>Interactive visualization of restored wetlands and natural buffers</p>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>Restoration Benefits</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <h3>Wetlands Restored</h3>
+                                <div class="stat-value">450 ha</div>
+                                <div class="stat-change">Target: 1,200 ha</div>
+                            </div>
+                            <div class="stat-card">
+                                <h3>River Reconnection</h3>
+                                <div class="stat-value">12 km</div>
+                                <div class="stat-change">3 channels restored</div>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Natural Buffers</h3>
+                                <div class="stat-value">85 km</div>
+                                <div class="stat-change">Vegetation barriers</div>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Flood Risk Reduction</h3>
+                                <div class="stat-value">42%</div>
+                                <div class="stat-change positive">Projected over 10 years</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3>Long-term Mitigation Impact</h3>
+                        <ul style="line-height: 2;">
+                            <li>Estimated reduction in annual flood damage: ₹280M per year</li>
+                            <li>Population protected: 65,000+ people</li>
+                            <li>Agricultural land secured: 8,500 hectares</li>
+                            <li>Biodiversity improvement: 34 species habitat restoration</li>
+                            <li>Carbon sequestration: 12,000 tons CO2 annually</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

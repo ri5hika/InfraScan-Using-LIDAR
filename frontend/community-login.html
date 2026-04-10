@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Login - Infrascan</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="login-page">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>Community Login</h1>
+                <p>For citizens, NGOs, donors, and community members</p>
+            </div>
+            
+            <form class="login-form" onsubmit="handleLogin(event, 'community')">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="your.email@example.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="userType">I am a</label>
+                    <select id="userType" name="userType" required>
+                        <option value="">Select User Type</option>
+                        <option value="citizen">Citizen</option>
+                        <option value="ngo">NGO Representative</option>
+                        <option value="donor">Donor/Investor</option>
+                        <option value="volunteer">Volunteer</option>
+                        <option value="journalist">Journalist</option>
+                        <option value="researcher">Researcher</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+                
+                <div class="forgot-password">
+                    <a href="#">Forgot password?</a>
+                </div>
+                
+                <button type="submit" class="login-btn">Login</button>
+            </form>
+            
+            <div class="login-footer">
+                <p>Don't have an account? <a href="#">Register Now</a></p>
+                <p>Government Official? <a href="government-login.html">Use Government Login</a></p>
+                <p><a href="index.html">← Back to Home</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
